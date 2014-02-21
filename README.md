@@ -1,28 +1,40 @@
-laravel-analytics
+laravel-analytics v0.1.0
 =================
 
 Laravel filter to track Visitors and Page Views
 
+## Tracks
+
+* IP Address
+* Platform - Requires browscap.ini to be installed
+* Browser - Requires browscap.ini to be installed
+* Browser Version - Requires browscap.ini to be installed
+* Crawler - Requires browscap.ini to be installed
+* Mobile - Requires browscap.ini to be installed
+* CSS Version - Requires browscap.ini to be installed
+* Lang - Requires browscap.ini to be installed
+* Location - Requires pecl geoip plugin
+* Geo - Requires pecl geoip plugin
 
 ## Installation
 
 First update your `composer.json` to include the following:
 ````
-    "require": {
-        "isuttell/laravel-sitemap" : "dev-master"
-    },
+"require": {
+    "isuttell/laravel-sitemap" : "dev-master"
+},
 ````
 ````
-    "repositories": [
-        {
-            "type": "vcs",
-            "url" : "https://github.com/isuttell/laravel-sitemap.git"
-        }
-    ]
+"repositories": [
+    {
+        "type": "vcs",
+        "url" : "https://github.com/isuttell/laravel-sitemap.git"
+    }
+],
 ````
 Then run `composer update`.  After composer finishes updating, add the following line to the `$providers` array in your `app/config/app.php` file.
 ````
-    'Isuttell\LaravelAnalytics\LaravelAnalyticsServiceProvider',
+'Isuttell\LaravelAnalytics\LaravelAnalyticsServiceProvider',
 ````
 
 This package has two migrations you need to run before use. To do this run the following command:
