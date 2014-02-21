@@ -1,32 +1,35 @@
 <?php
+/*
+|--------------------------------------------------------------------------
+| Filters
+|--------------------------------------------------------------------------
+*/
 
 use Isuttell\LaravelAnalytics\VisitorAnalytics as VisitorAnalytics;
 use Isuttell\LaravelAnalytics\PageView as PageView;
 
-
-/*
-|--------------------------------------------------------------------------
-| Analytics
-|--------------------------------------------------------------------------
-| Must assign this filter to routes we want to track
-*/
-
-
 Route::filter('analytics', function()
 {
+	/*--------------------------------------------------------------------------
+	| Record Visitor Information
+	*/
+
 	$analyticsSession = null;
 
-	//Check to see if we already have data for this user
+
+	// Check to see if we already have data for this user
 	if(Session::has('visitoranalytics_id')) $analyticsSession = VisitorAnalytics::find(Session::get('visitoranalytics_id'));
 
-	//If not create a new session
+
+	// If not create a new session
 	if(is_null($analyticsSession)) $analyticsSession = new VisitorAnalytics;
 
 
-	// //Save the users IP and User Agent
+	// Save the users IP and User Agent
 	$analyticsSession->ip         = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '';
 	$analyticsSession->user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
 	$analyticsSession->lang       = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '';
+
 
 	// If the user is logged in store their id
 	if(Auth::check() && $analyticsSession->user === 0)
@@ -34,10 +37,12 @@ Route::filter('analytics', function()
 		$analyticsSession->user_id = Auth::user()->id;
 	}
 
-	//Keep track of the last activity so we can see how long a user was on the site
+
+	// Keep track of the last activity so we can see how long a user was on the site
 	$analyticsSession->last_activity = \Carbon\Carbon::now();
 
-	// //If browscap is set up, save browser information
+
+	// If browscap is set up, save browser information
 	if(ini_get("browscap")) {
 		$browser = get_browser(null, true);
 		$analyticsSession->platform        = $browser['platform'];
@@ -48,7 +53,7 @@ Route::filter('analytics', function()
 		$analyticsSession->cssversion      = $browser['cssversion'];
 	}
 
-	//If GeoIP module is loaded look up location
+	// If GeoIP module is loaded look up location
 	if(extension_loaded ('geoip'))
 	{
 		$geoIpRecord = geoip_record_by_name($_SERVER['REMOTE_ADDR']);
@@ -75,13 +80,14 @@ Route::filter('analytics', function()
 		}
 	}
 
+	// Save the data and store the id for access on the next page load
 	$analyticsSession->save();
 	Session::put('visitoranalytics_id', $analyticsSession->id);
 
 
 	/*
 	|--------------------------------------------------------------------------
-	| Page Views
+	| Record Page Views
 	|
 	*/
 
@@ -100,23 +106,34 @@ Route::filter('analytics', function()
 		}
 	}
 
-	//Generate a new page view
+	// Generate a new page view
 	$pageView = new PageView;
+
+	// Save the visitoranalytics id so we can link the data
 	$pageView->visitoranalytics_id = $analyticsSession->id;
+
+	// HTTP Response Code: eg 200, 404, etc
 	$pageView->status              = http_response_code();
+
+	// Save the URL of the page view
 	$pageView->url                 = Request::path() === '/' ? '/' : '/' . Request::path();
 
-	$pageView->ajax = Request::ajax();
+	// Check to see if the call is an ajax call
+	$pageView->ajax                = Request::ajax();
 
+	// Get the request method: GET, POST, PUT, DELETE
 	if(isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'])
 	{
-		$pageView->method = strtoupper($_SERVER['REQUEST_METHOD']);
+		$pageView->method          = strtoupper($_SERVER['REQUEST_METHOD']);
 	}
 
+	// Save the referrer so we can track a users through the site
 	if(isset($_SERVER['HTTP_REFERER']) && $_SERVER['HTTP_REFERER'])
 	{
-		$pageView->referrer =$_SERVER['HTTP_REFERER'];
+		$pageView->referrer        = $_SERVER['HTTP_REFERER'];
 	}
+
+	// And save
 	$pageView->save();
 
 });

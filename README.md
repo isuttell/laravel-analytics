@@ -12,7 +12,7 @@ Laravel filter to track Visitors and Page Views
 * Crawler - Requires browscap.ini to be installed
 * Mobile - Requires browscap.ini to be installed
 * CSS Version - Requires browscap.ini to be installed
-* Lang - Requires browscap.ini to be installed
+* Lang
 * Location - Requires pecl geoip plugin
 * Geo - Requires pecl geoip plugin
 
