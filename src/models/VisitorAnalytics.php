@@ -17,7 +17,7 @@ class VisitorAnalytics extends Model {
 
 	public function setIpAttribute($value)
 	{
-		$this->attributes['ip'] = ip2long($value);
+		$this->attributes['ip'] = ip2long($value) || 0;
 	}
 
 	public function getGeoAttribute($value)

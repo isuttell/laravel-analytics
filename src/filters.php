@@ -24,7 +24,6 @@ Route::filter('analytics', function()
 	// If not create a new session
 	if(is_null($analyticsSession)) $analyticsSession = new VisitorAnalytics;
 
-
 	// Save the users IP and User Agent
 	$analyticsSession->ip         = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '';
 	$analyticsSession->user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
@@ -32,7 +31,7 @@ Route::filter('analytics', function()
 
 
 	// If the user is logged in store their id
-	if(Auth::check() && $analyticsSession->user === 0)
+	if(Auth::check() && $analyticsSession->user_id === 0)
 	{
 		$analyticsSession->user_id = Auth::user()->id;
 	}
