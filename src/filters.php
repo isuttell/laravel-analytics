@@ -55,27 +55,32 @@ Route::filter('analytics', function()
 	// If GeoIP module is loaded look up location
 	if(extension_loaded ('geoip'))
 	{
-		$geoIpRecord = geoip_record_by_name($_SERVER['REMOTE_ADDR']);
-
-		//if we found a record parse it
-		if($geoIpRecord !== false)
-		{
-			$analyticsSession->location = '';
-			if(strlen( $geoIpRecord['city'] ) > 0 && strlen( $geoIpRecord['region'] ) > 0)
+		// Catch any errors when running geoip
+		try {
+			$geoIpRecord = geoip_record_by_name($_SERVER['REMOTE_ADDR']);
+	
+			//if we found a record parse it
+			if($geoIpRecord !== false)
 			{
-				$analyticsSession->location = $geoIpRecord['city'] . ', ' . $geoIpRecord['region'];
+				$analyticsSession->location = '';
+				if(strlen( $geoIpRecord['city'] ) > 0 && strlen( $geoIpRecord['region'] ) > 0)
+				{
+					$analyticsSession->location = $geoIpRecord['city'] . ', ' . $geoIpRecord['region'];
+				}
+	
+	
+				//Create a GeoJSON compatibl object to store coords
+				$geoJson = new stdClass();
+				$geoJson->type = "point";
+				$geoJson->coordinates = array(
+						$geoIpRecord['latitude'],
+						$geoIpRecord['longitude']
+					);
+	
+				$analyticsSession->geo = json_encode($geoJson);
 			}
-
-
-			//Create a GeoJSON compatibl object to store coords
-			$geoJson = new stdClass();
-			$geoJson->type = "point";
-			$geoJson->coordinates = array(
-					$geoIpRecord['latitude'],
-					$geoIpRecord['longitude']
-				);
-
-			$analyticsSession->geo = json_encode($geoJson);
+		} catch (Exception $e) {
+		    Log::error($e);
 		}
 	}
 
